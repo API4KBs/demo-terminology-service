@@ -3,5 +3,8 @@
 .project
 .classpath
 .settings
+
 target/
 bin/
+
+**/catalog-v00*.xml

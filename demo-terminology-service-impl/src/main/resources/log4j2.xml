@@ -6,8 +6,8 @@
     </Console>
   </Appenders>
   <loggers>
-    <Logger name="org.apache.log4j.xml" level="WARN"/>
-    <root level="WARN">
+    <Logger name="org.apache.log4j.xml" level="FATAL"/>
+    <root level="FATAL">
       <appender-ref ref="STDOUT"/>
     </root>
   </loggers>

@@ -52,7 +52,7 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Pointer'
-  /vocabularies/{vocabularyId}:
+  /vocabularies/{vocabularyId}/versions/{versionTag}:
     get:
       tags:
       - Terms
@@ -69,7 +69,12 @@ paths:
           description: The id of the terminology system
           required: true
           type: string
-          format: uri
+          format: uuid
+        - name: versionTag
+          in: path
+          description: The version of the terminology system
+          required: true
+          type: string
         - name: label
           in: query
           description: Filters by terms with matching label

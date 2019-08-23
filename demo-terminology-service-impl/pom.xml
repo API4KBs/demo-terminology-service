@@ -12,6 +12,7 @@
   </parent>
 
   <artifactId>demo-terminology-service-impl</artifactId>
+  <name>API4KP :: Demo :: Terminology Server - Spring Implementation</name>
 
   <packaging>war</packaging>
 
@@ -33,6 +34,30 @@
       <artifactId>demo-terminology-service-api-server</artifactId>
       <version>${project.version}</version>
     </dependency>
+
+    <dependency>
+      <groupId>edu.mayo.kmdp</groupId>
+      <artifactId>kmdp-asset-repository-core</artifactId>
+      <version>2.3.1</version>
+    </dependency>
+    <dependency>
+      <groupId>edu.mayo.kmdp</groupId>
+      <artifactId>kmdp-knowledge-transrepresentation-core</artifactId>
+      <version>2.3.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>edu.mayo.kmdp</groupId>
+      <artifactId>kmdp-asset-repository-service-client</artifactId>
+      <version>${kmdp.impl.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>edu.mayo.kmdp</groupId>
+      <artifactId>kmdp-artifact-transrepresentation-service-client</artifactId>
+      <version>${kmdp.impl.version}</version>
+    </dependency>
+
+
     <dependency>
       <groupId>org.omg.demo</groupId>
       <artifactId>demo-terminology-service-api-client</artifactId>
