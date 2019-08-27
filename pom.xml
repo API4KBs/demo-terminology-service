@@ -20,7 +20,6 @@
     <apiVersion>1.0.0</apiVersion>
     <apiFile>openapi/v2/org/omg/demo/${apiVersion}/DemoTerminology.yml</apiFile>
 
-    <org.omg.demo.demo-terminology-service-model.version>${project.version}</org.omg.demo.demo-terminology-service-model.version>
     <kmdp.archetype.version.resolved>${edu.mayo.kmdp:kmdp-api-facade-generator:jar.version}</kmdp.archetype.version.resolved>
 
   </properties>
@@ -81,7 +80,6 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <modules>
-        <module>demo-terminology-service-model</module>
         <module>demo-terminology-service-api</module>
         <module>demo-terminology-service-impl</module>
       </modules>
