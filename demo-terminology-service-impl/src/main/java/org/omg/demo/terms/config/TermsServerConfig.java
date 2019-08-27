@@ -28,6 +28,12 @@ import javax.inject.Inject;
 import org.omg.demo.terms.TermsServer;
 import org.omg.demo.terms.components.SPARQLParser;
 import org.omg.demo.terms.server.TermsApiDelegate;
+import org.omg.demo.terms.temp.JenaQuery;
+import org.omg.demo.terms.temp.KnowledgeBaseService;
+import org.omg.demo.terms.temp.QueryBinder;
+import org.omg.demo.terms.temp.QueryService;
+import org.omg.demo.terms.temp.SparqlQueryBinder;
+import org.omg.demo.terms.temp.TermsKnowledgeBase;
 import org.omg.spec.api4kp._1_0.services.KPComponent;
 import org.omg.spec.api4kp._1_0.services.KPServer;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -47,17 +53,32 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableAutoConfiguration
 public class TermsServerConfig implements WebMvcConfigurer {
 
+  //TODO Revisit all the Spring Configurations
+
   @Bean
   @KPServer
   public TermsApiDelegate server() {
     return new TermsServer();
   }
 
+  @Bean
+  public KnowledgeBaseService kb() {
+    return new TermsKnowledgeBase();
+  }
+
+  @Bean
+  public QueryService queryMgr() {
+    return new JenaQuery();
+  }
+
+  @Bean
+  public QueryBinder binder() {
+    return new SparqlQueryBinder();
+  }
 
   @Bean
   @KPServer
   public KnowledgeAssetRepository assetRepository() {
-    //TODO check
     return KnowledgeAssetRepository.newRepository();
   }
 
