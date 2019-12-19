@@ -15,29 +15,10 @@
  */
 package org.omg.demo.terms.config;
 
-import edu.mayo.kmdp.language.LanguageDeSerializer;
 import edu.mayo.kmdp.language.parsers.OWLParser;
-import edu.mayo.kmdp.repository.asset.KnowledgeAssetRepository;
-import edu.mayo.kmdp.tranx.DeserializeApi;
-import edu.mayo.kmdp.tranx.DetectApi;
-import edu.mayo.kmdp.tranx.TransxionApi;
-import edu.mayo.kmdp.tranx.server.DeserializeApiDelegate;
-import edu.mayo.kmdp.tranx.server.DetectApiDelegate;
-import edu.mayo.kmdp.tranx.server.TransxionApiDelegate;
-import javax.inject.Inject;
 import org.omg.demo.terms.TermsServer;
-import org.omg.demo.terms.components.SPARQLParser;
-import org.omg.demo.terms.server.TermsApiDelegate;
-import org.omg.demo.terms.temp.JenaQuery;
-import org.omg.demo.terms.temp.KnowledgeBaseService;
-import org.omg.demo.terms.temp.QueryBinder;
-import org.omg.demo.terms.temp.QueryService;
-import org.omg.demo.terms.temp.SparqlQueryBinder;
-import org.omg.demo.terms.temp.TermsKnowledgeBase;
-import org.omg.spec.api4kp._1_0.services.KPComponent;
-import org.omg.spec.api4kp._1_0.services.KPServer;
+import org.omg.demo.terms.components.SparqlLifter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
@@ -47,63 +28,13 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @ComponentScan(
-    basePackageClasses = {LanguageDeSerializer.class,SPARQLParser.class},
+    basePackageClasses = {
+        TermsServer.class,
+        SparqlLifter.class},
     excludeFilters = {@Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {OWLParser.class})})
 @PropertySource("classpath:application.properties")
 @EnableAutoConfiguration
 public class TermsServerConfig implements WebMvcConfigurer {
-
-  //TODO Revisit all the Spring Configurations
-
-  @Bean
-  @KPServer
-  public TermsApiDelegate server() {
-    return new TermsServer();
-  }
-
-  @Bean
-  public KnowledgeBaseService kb() {
-    return new TermsKnowledgeBase();
-  }
-
-  @Bean
-  public QueryService queryMgr() {
-    return new JenaQuery();
-  }
-
-  @Bean
-  public QueryBinder binder() {
-    return new SparqlQueryBinder();
-  }
-
-  @Bean
-  @KPServer
-  public KnowledgeAssetRepository assetRepository() {
-    return KnowledgeAssetRepository.newRepository();
-  }
-
-
-  @Bean
-  @KPComponent
-  @Inject
-  public DetectApi detectApi(@KPServer DetectApiDelegate detector) {
-    return DetectApi.newInstance(detector);
-  }
-
-  @Bean
-  @KPComponent
-  @Inject
-  public TransxionApi executionApi(@KPServer TransxionApiDelegate txor) {
-    return TransxionApi.newInstance(txor);
-  }
-
-  @Bean
-  @KPComponent
-  @Inject
-  public DeserializeApi deserializeApi(@KPServer DeserializeApiDelegate parser) {
-    return DeserializeApi.newInstance(parser);
-  }
-
 
 
 }

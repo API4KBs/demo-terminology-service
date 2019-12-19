@@ -9,3 +9,4 @@ WHERE {
   ?uri a skos:Concept .
   ?uri skos:prefLabel ?label .
 }
+LIMIT 10

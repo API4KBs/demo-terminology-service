@@ -7,20 +7,20 @@
   <parent>
     <groupId>edu.mayo.kmdp</groupId>
     <artifactId>kmdp-bom</artifactId>
-    <version>[3.0.0,3.0.1]</version>
+    <version>[4.0.1,5.0.0)</version>
   </parent>
 
   <packaging>pom</packaging>
 
   <artifactId>demo-terminology-service-parent</artifactId>
   <groupId>org.omg.demo</groupId>
-  <version>1.0.0</version>
+  <version>2.0.0</version>
 
   <properties>
     <apiVersion>1.0.0</apiVersion>
-    <apiFile>openapi/v2/org/omg/demo/${apiVersion}/DemoTerminology.yml</apiFile>
+    <apiFile>openapi/v2/org/omg/demo/${apiVersion}/Terminology.yml</apiFile>
 
-    <kmdp.archetype.version.resolved>${edu.mayo.kmdp:kmdp-api-facade-generator:jar.version}</kmdp.archetype.version.resolved>
+    <kmdp.archetype.version.resolved>4.0.1</kmdp.archetype.version.resolved>
 
   </properties>
 
@@ -63,7 +63,7 @@
             <generateModels>false</generateModels>
             <generateApiTests>false</generateApiTests>
             <generateModelTests>false</generateModelTests>
-            <modelPackage>${model.package}</modelPackage>
+<!--            <modelPackage>${model.package}</modelPackage>-->
             <configOptions>
               <dateLibrary>java8</dateLibrary>
             </configOptions>
@@ -102,9 +102,10 @@
               <archetypeCatalog>local</archetypeCatalog>
               <archetypeArtifactId>kmdp-openapi-spring-service-archetype</archetypeArtifactId>
               <archetypeGroupId>edu.mayo.kmdp</archetypeGroupId>
-              <archetypeVersion>3.0.1</archetypeVersion>
+              <archetypeVersion>4.0.1</archetypeVersion>
               <interactiveMode>false</interactiveMode>
               <preserveRootPOM>true</preserveRootPOM>
+              <propertyFile/>
             </configuration>
 
             <inherited>false</inherited>
@@ -117,7 +118,7 @@
                 </goals>
                 <phase>initialize</phase>
                 <configuration>
-                  <propertyFile>properties/demoTerminology.properties</propertyFile>
+                  <propertyFile>properties/terminology.properties</propertyFile>
                 </configuration>
               </execution>
             </executions>

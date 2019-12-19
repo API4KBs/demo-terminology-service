@@ -15,68 +15,85 @@
  */
 package org.omg.demo.terms;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static java.util.Collections.emptyList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import edu.mayo.kmdp.id.helper.DatatypeHelper;
-import edu.mayo.kmdp.util.Util;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import javax.inject.Inject;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.omg.demo.terms.config.TermsTestConfig;
+import org.omg.demo.terms.config.TermsServerConfig;
 import org.omg.demo.terms.config.TermsTestHelper;
+import org.omg.demo.terms.config.TestConfig;
 import org.omg.spec.api4kp._1_0.identifiers.ConceptIdentifier;
 import org.omg.spec.api4kp._1_0.identifiers.Pointer;
-import org.omg.spec.api4kp._1_0.identifiers.UUIDentifier;
-import org.omg.spec.api4kp._1_0.services.KPComponent;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.omg.spec.api4kp._1_0.services.KPServer;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {TermsTestConfig.class})
-@EnableAutoConfiguration
+@SpringBootTest
+@ContextConfiguration(classes = {TermsServerConfig.class, TestConfig.class})
 public class TermsClientTest {
 
   @Inject
-  @KPComponent
-  TermsApi termsApi;
+  @KPServer
+  TermsServer termsServer;
 
   @Inject
   TermsTestHelper helper;
 
+  @BeforeEach
+  void init() {
+    helper.initializeRepositoryContent();
+  }
+
   @Test
   void testServer() {
-    // Publish a vocabulary to the Asset Repository supporting the Terminology Server
-    helper.initializeRepositoryContent();
 
     // Discover the existing vocabularies
-    Optional<List<Pointer>> vocabsAnswer =
-        termsApi.listTerminologies().getOptionalValue();
+    List<Pointer> vocabsAnswer =
+        termsServer.listTerminologies()
+            .orElse(emptyList());
+    assertEquals(2, vocabsAnswer.size());
 
-    assertTrue(vocabsAnswer.isPresent());
-
-
-
-    Optional<UUIDentifier> assetTag =
-        vocabsAnswer.orElse(Collections.emptyList()).stream()
-            .map(Pointer::getEntityRef)
-            .map(DatatypeHelper::toUUIDentifier)
-            .flatMap(Util::trimStream)
-            .findFirst(); // we know there's only one
+    for (Pointer entity : vocabsAnswer) {
+      System.out.println(
+          "vocabsAnswer name: " + entity.getName() + ", Type " + entity.getEntityRef().getUri());
+    }
 
     // List the terms in a given vocabulary
-    assertTrue(assetTag.isPresent());
-    List<ConceptIdentifier> terms =
-        termsApi.getTerms(assetTag.get().getUUID(), "1.0.0", null)
-        .orElse(Collections.emptyList());
+    List<ConceptIdentifier> termsLocal = termsServer
+        .getTerms(TermsTestHelper.ESWC_ASSET_UUID, TermsTestHelper.ONTOLOGY_VERSION)
+        .orElse(emptyList());
 
-    assertTrue(terms.stream()
-        .map(ConceptIdentifier::getLabel)
-        .anyMatch("Class A"::equalsIgnoreCase));
+//    List<ConceptIdentifier> termsVirtuoso = termsServer
+//        .getTerms(toUUID(assetId.getTag()), assetId.getVersion(), null)
+//        .orElse(Collections.emptyList());
 
+    List<ConceptIdentifier> termsDBpedia = termsServer
+        .getTerms(TermsTestHelper.DBPEDIA_ASSET_UUID, TermsTestHelper.ONTOLOGY_VERSION, null)
+        .orElse(emptyList());
+
+    /*
+     * Print Results:
+     */
+    System.out.println("\n-------------- Local Terms --------------- ");
+    for (ConceptIdentifier conceptIdentifier : termsLocal) {
+      System.out.println(
+          "ConceptIdentifier label : " + conceptIdentifier.getLabel() + ". conceptIdentifier Tag : "
+              + conceptIdentifier.getTag());
+    }
+
+//    System.out.println("\n-------------- Terms from Virtuoso (localhost) --------------- ");
+//    for(ConceptIdentifier conceptIdentifier: termsVirtuoso)
+//      System.out.println("ConceptIdentifier label : "+conceptIdentifier.getLabel()+". conceptIdentifier Tag : "+conceptIdentifier.getTag());
+
+    System.out.println("\n-------------- Terms from dbpedia.org --------------- ");
+    for (ConceptIdentifier conceptIdentifier : termsDBpedia) {
+      System.out.println(
+          "ConceptIdentifier label : " + conceptIdentifier.getLabel() + ". conceptIdentifier Tag : "
+              + conceptIdentifier.getTag());
+    }
   }
 
 

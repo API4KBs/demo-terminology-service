@@ -9,3 +9,4 @@ WHERE {
   ?uri a owl:Class .
   ?uri rdfs:label ?label .
 }
+LIMIT 10

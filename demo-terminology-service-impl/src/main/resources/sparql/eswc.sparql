@@ -1,0 +1,1 @@
+select * from <http://eswc.graph> where { ?label ?p ?role } LIMIT 10
