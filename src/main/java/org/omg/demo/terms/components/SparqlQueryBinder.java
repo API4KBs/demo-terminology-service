@@ -15,7 +15,7 @@
  */
 package org.omg.demo.terms.components;
 
-import edu.mayo.kmdp.knowledgebase.v3.server.IntrospectionApiInternal;
+import edu.mayo.kmdp.knowledgebase.v3.server.ReasoningApiInternal;
 import java.net.URI;
 import java.util.UUID;
 import org.apache.jena.query.ParameterizedSparqlString;
@@ -27,7 +27,7 @@ import org.omg.spec.api4kp._1_0.services.KnowledgeCarrier;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SparqlQueryBinder implements IntrospectionApiInternal._bind {
+public class SparqlQueryBinder implements ReasoningApiInternal._bind {
 
   public static UUID OPERATOR_ID = UUID.fromString("73d9abfb-5192-45e8-8368-3ac7f5067e9b");
 

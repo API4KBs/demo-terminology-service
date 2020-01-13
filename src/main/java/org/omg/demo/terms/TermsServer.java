@@ -19,13 +19,13 @@ import static edu.mayo.ontology.taxonomies.krlanguage.KnowledgeRepresentationLan
 import static org.omg.demo.terms.components.SparqlQueryBinder.OPERATOR_ID;
 import static org.omg.spec.api4kp._1_0.AbstractCarrier.rep;
 
-import edu.mayo.kmdp.knowledgebase.v3.server.IntrospectionApiInternal;
 import edu.mayo.kmdp.knowledgebase.v3.server.KnowledgeBaseApiInternal;
 import edu.mayo.kmdp.knowledgebase.v3.server.ReasoningApiInternal;
 import edu.mayo.kmdp.metadata.surrogate.ComputableKnowledgeArtifact;
 import edu.mayo.kmdp.metadata.surrogate.KnowledgeAsset;
 import edu.mayo.kmdp.metadata.surrogate.Representation;
 import edu.mayo.kmdp.repository.asset.KnowledgeAssetRepositoryService;
+import edu.mayo.kmdp.terms.v3.server.TermsApiInternal;
 import edu.mayo.kmdp.tranx.v3.server.DeserializeApiInternal;
 import edu.mayo.ontology.taxonomies.lexicon.LexiconSeries;
 import java.util.Arrays;
@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.UUID;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.omg.api4kp.terms.v2.server.TermsApiInternal;
 import org.omg.demo.terms.internal.TermsBuilder;
 import org.omg.demo.terms.internal.TermsQueryType;
 import org.omg.spec.api4kp._1_0.AbstractCarrier;
@@ -69,7 +68,7 @@ public class TermsServer implements TermsApiInternal {
   private DeserializeApiInternal._lift sparqlParser;
   @Inject
   // ... and parametrize queries to be submitted to the KB
-  private IntrospectionApiInternal._bind binder;
+  private ReasoningApiInternal._bind binder;
 
   @Inject
   private TermsBuilder termsBuilder;

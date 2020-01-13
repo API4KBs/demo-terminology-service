@@ -6,6 +6,4 @@
 target/
 bin/
 
-demo-terminology-service-api
-
 **/*.xml.versionsBackup
