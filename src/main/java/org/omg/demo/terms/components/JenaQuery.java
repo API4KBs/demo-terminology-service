@@ -15,7 +15,7 @@
  */
 package org.omg.demo.terms.components;
 
-import edu.mayo.kmdp.knowledgebase.v3.server.ReasoningApiInternal;
+import edu.mayo.kmdp.inference.v3.server.QueryApiInternal._askQuery;
 import edu.mayo.kmdp.util.JenaUtil;
 import edu.mayo.kmdp.util.Util;
 import java.util.LinkedList;
@@ -38,12 +38,15 @@ import org.omg.spec.api4kp._1_0.Answer;
 import org.omg.spec.api4kp._1_0.datatypes.Bindings;
 import org.omg.spec.api4kp._1_0.services.KnowledgeBase;
 import org.omg.spec.api4kp._1_0.services.KnowledgeCarrier;
-import org.springframework.stereotype.Component;
 
 @Named
-public class JenaQuery implements ReasoningApiInternal._askQuery {
+public class JenaQuery implements _askQuery {
 
   @Override
+  public Answer<List<Bindings>> askQuery(UUID modelId, String versionTag, KnowledgeCarrier query) {
+    return null;
+  }
+
   public Answer<List<Bindings>> askQuery(UUID lambdaId, KnowledgeBase kBase,
       KnowledgeCarrier query) {
     if (isLocal(kBase)) {
@@ -97,6 +100,5 @@ public class JenaQuery implements ReasoningApiInternal._askQuery {
           return b;
         }).collect(Collectors.toList());
   }
-
 
 }

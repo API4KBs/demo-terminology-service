@@ -13,14 +13,18 @@
  */
 package org.omg.demo.terms;
 
+import static edu.mayo.kmdp.util.Util.uuid;
 import static edu.mayo.ontology.taxonomies.api4kp.parsinglevel.ParsingLevelSeries.Parsed_Knowedge_Expression;
 import static edu.mayo.ontology.taxonomies.kao.knowledgeassettype.KnowledgeAssetTypeSeries.Formal_Ontology;
 import static edu.mayo.ontology.taxonomies.krlanguage.KnowledgeRepresentationLanguageSeries.SPARQL_1_1;
 import static org.omg.demo.terms.components.SparqlQueryBinder.OPERATOR_ID;
 import static org.omg.spec.api4kp._1_0.AbstractCarrier.rep;
 
+import edu.mayo.kmdp.id.VersionedIdentifier;
+import edu.mayo.kmdp.id.helper.DatatypeHelper;
+import edu.mayo.kmdp.inference.v3.server.QueryApiInternal._askQuery;
 import edu.mayo.kmdp.knowledgebase.v3.server.KnowledgeBaseApiInternal;
-import edu.mayo.kmdp.knowledgebase.v3.server.ReasoningApiInternal;
+import edu.mayo.kmdp.knowledgebase.v3.server.KnowledgeBaseApiInternal._bind;
 import edu.mayo.kmdp.metadata.surrogate.ComputableKnowledgeArtifact;
 import edu.mayo.kmdp.metadata.surrogate.KnowledgeAsset;
 import edu.mayo.kmdp.metadata.surrogate.Representation;
@@ -60,7 +64,7 @@ public class TermsServer implements TermsApiInternal {
   // Load and perform reasoning with terminology systems
   private KnowledgeBaseApiInternal termsKB;
   @Inject
-  private ReasoningApiInternal._askQuery inquirer;
+  private _askQuery inquirer;
 
   @Inject
   @KPSupport(SPARQL_1_1)
@@ -68,7 +72,7 @@ public class TermsServer implements TermsApiInternal {
   private DeserializeApiInternal._lift sparqlParser;
   @Inject
   // ... and parametrize queries to be submitted to the KB
-  private ReasoningApiInternal._bind binder;
+  private _bind binder;
 
   @Inject
   private TermsBuilder termsBuilder;
@@ -99,17 +103,19 @@ public class TermsServer implements TermsApiInternal {
       String labelFilter) {
     TermsQueryType queryType = detectQueryType(vocabularyMetadata);
     return termsKB.initKnowledgeBase(vocabularyMetadata)
-        .flatMap(kBase ->
+        .map(DatatypeHelper::deRef)  // TODO this will no longer necessary in 6.x
+        .flatMap(kBaseId ->
             getQuery(vocabularyMetadata, labelFilter, queryType)
                 .flatMap(boundQuery ->
-                    doQuery(kBase, boundQuery, queryType)));
+                    doQuery(kBaseId, boundQuery, queryType)));
   }
 
+
   private Answer<List<ConceptIdentifier>> doQuery(
-      KnowledgeBase kBase,
+      VersionedIdentifier kBaseId,
       KnowledgeCarrier query,
       TermsQueryType queryType) {
-    return inquirer.askQuery(null, kBase, query)
+    return inquirer.askQuery(uuid(kBaseId.getTag()), kBaseId.getVersion(), query)
         .map(answer -> termsBuilder.buildTerms(answer, queryType));
   }
 
@@ -119,7 +125,17 @@ public class TermsServer implements TermsApiInternal {
       String labelFilter,
       TermsQueryType queryType) {
     KnowledgeCarrier paramQuery = loadParametricQuery(queryType.getSourceURL());
-    return binder.bind(OPERATOR_ID, paramQuery, getBindings(vocMetadata, labelFilter));
+    Bindings bindings = getBindings(vocMetadata, labelFilter);
+
+    // TODO fix the identifiers
+    return termsKB.initKnowledgeBase()
+        .map(DatatypeHelper::deRef)
+        .flatMap(kbId -> termsKB.populateKnowledgeBase(uuid(kbId.getTag()),kbId.getVersion(),paramQuery))
+        .map(DatatypeHelper::deRef)
+        .flatMap(kbId -> termsKB.bind(uuid(kbId.getTag()),kbId.getVersion(),bindings))
+        .map(DatatypeHelper::deRef)
+        .flatMap(kbId -> termsKB.getKnowledgeBase(uuid(kbId.getTag()),kbId.getVersion()))
+        .map(KnowledgeBase::getManifestation);
   }
 
   private KnowledgeCarrier loadParametricQuery(String path) {
