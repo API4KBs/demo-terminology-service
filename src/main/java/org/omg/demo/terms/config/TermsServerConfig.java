@@ -16,8 +16,8 @@
 package org.omg.demo.terms.config;
 
 import edu.mayo.kmdp.language.parsers.OWLParser;
+import edu.mayo.kmdp.language.parsers.lifters.SparqlLifter;
 import org.omg.demo.terms.TermsServer;
-import org.omg.demo.terms.components.SparqlLifter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
