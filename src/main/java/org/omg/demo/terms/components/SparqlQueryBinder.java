@@ -19,6 +19,8 @@ import static edu.mayo.ontology.taxonomies.krlanguage.KnowledgeRepresentationLan
 import edu.mayo.kmdp.id.helper.DatatypeHelper;
 import edu.mayo.kmdp.knowledgebase.v3.server.KnowledgeBaseApiInternal;
 import edu.mayo.kmdp.knowledgebase.v3.server.KnowledgeBaseApiInternal._bind;
+import edu.mayo.kmdp.metadata.surrogate.KnowledgeAsset;
+import edu.mayo.kmdp.util.Util;
 import java.net.URI;
 import java.util.UUID;
 import javax.inject.Inject;
@@ -48,11 +50,11 @@ public class SparqlQueryBinder implements _bind {
         .map(KnowledgeBase::getManifestation)
         .flatMap(paramQuery -> bind(paramQuery, bindings))
         .flatMap(boundCarrier ->
-            kbManager.initKnowledgeBase()
+            kbManager.initKnowledgeBase(new KnowledgeAsset().withAssetId(boundCarrier.getAssetId()))
                 .map(DatatypeHelper::deRef)
-                .flatMap(boundKbId -> kbManager
-                    .populateKnowledgeBase(uuid(boundKbId.getTag()), boundKbId.getVersion(),
-                        boundCarrier))
+                .flatMap(boundKbId ->
+                    kbManager.populateKnowledgeBase(
+                        Util.toUUID(boundKbId.getTag()), boundKbId.getVersion(), boundCarrier))
         );
   }
 
@@ -67,6 +69,7 @@ public class SparqlQueryBinder implements _bind {
       }
     });
     return Answer.of(new DocumentCarrier()
+        .withAssetId(DatatypeHelper.uri(UUID.randomUUID().toString(),"0.0.0"))
         .withStructuredExpression(paramQ.asQuery())
         .withRepresentation(paramQuery.getRepresentation()));
   }

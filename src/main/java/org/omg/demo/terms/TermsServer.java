@@ -13,24 +13,22 @@
  */
 package org.omg.demo.terms;
 
-import static edu.mayo.kmdp.util.Util.uuid;
 import static edu.mayo.ontology.taxonomies.api4kp.parsinglevel.ParsingLevelSeries.Parsed_Knowedge_Expression;
 import static edu.mayo.ontology.taxonomies.kao.knowledgeassettype.KnowledgeAssetTypeSeries.Formal_Ontology;
 import static edu.mayo.ontology.taxonomies.krlanguage.KnowledgeRepresentationLanguageSeries.SPARQL_1_1;
-import static org.omg.demo.terms.components.SparqlQueryBinder.OPERATOR_ID;
 import static org.omg.spec.api4kp._1_0.AbstractCarrier.rep;
 
 import edu.mayo.kmdp.id.VersionedIdentifier;
 import edu.mayo.kmdp.id.helper.DatatypeHelper;
 import edu.mayo.kmdp.inference.v3.server.QueryApiInternal._askQuery;
 import edu.mayo.kmdp.knowledgebase.v3.server.KnowledgeBaseApiInternal;
-import edu.mayo.kmdp.knowledgebase.v3.server.KnowledgeBaseApiInternal._bind;
 import edu.mayo.kmdp.metadata.surrogate.ComputableKnowledgeArtifact;
 import edu.mayo.kmdp.metadata.surrogate.KnowledgeAsset;
 import edu.mayo.kmdp.metadata.surrogate.Representation;
 import edu.mayo.kmdp.repository.asset.KnowledgeAssetRepositoryService;
 import edu.mayo.kmdp.terms.v3.server.TermsApiInternal;
 import edu.mayo.kmdp.tranx.v3.server.DeserializeApiInternal;
+import edu.mayo.kmdp.util.Util;
 import edu.mayo.ontology.taxonomies.lexicon.LexiconSeries;
 import java.util.Arrays;
 import java.util.List;
@@ -62,7 +60,7 @@ public class TermsServer implements TermsApiInternal {
 
   @Inject
   // Load and perform reasoning with terminology systems
-  private KnowledgeBaseApiInternal termsKB;
+  private KnowledgeBaseApiInternal termsKBManager;
   @Inject
   private _askQuery inquirer;
 
@@ -70,9 +68,6 @@ public class TermsServer implements TermsApiInternal {
   @KPSupport(SPARQL_1_1)
   // Parse...
   private DeserializeApiInternal._lift sparqlParser;
-  @Inject
-  // ... and parametrize queries to be submitted to the KB
-  private _bind binder;
 
   @Inject
   private TermsBuilder termsBuilder;
@@ -102,7 +97,7 @@ public class TermsServer implements TermsApiInternal {
   private Answer<List<ConceptIdentifier>> getTermsForVocabulary(KnowledgeAsset vocabularyMetadata,
       String labelFilter) {
     TermsQueryType queryType = detectQueryType(vocabularyMetadata);
-    return termsKB.initKnowledgeBase(vocabularyMetadata)
+    return termsKBManager.initKnowledgeBase(vocabularyMetadata)
         .map(DatatypeHelper::deRef)  // TODO this will no longer necessary in 6.x
         .flatMap(kBaseId ->
             getQuery(vocabularyMetadata, labelFilter, queryType)
@@ -115,7 +110,7 @@ public class TermsServer implements TermsApiInternal {
       VersionedIdentifier kBaseId,
       KnowledgeCarrier query,
       TermsQueryType queryType) {
-    return inquirer.askQuery(uuid(kBaseId.getTag()), kBaseId.getVersion(), query)
+    return inquirer.askQuery(Util.toUUID(kBaseId.getTag()), kBaseId.getVersion(), query)
         .map(answer -> termsBuilder.buildTerms(answer, queryType));
   }
 
@@ -127,22 +122,37 @@ public class TermsServer implements TermsApiInternal {
     KnowledgeCarrier paramQuery = loadParametricQuery(queryType.getSourceURL());
     Bindings bindings = getBindings(vocMetadata, labelFilter);
 
-    // TODO fix the identifiers
-    return termsKB.initKnowledgeBase()
+    //TODO Should binding variables to a query more lightweight than setting up a KB?
+    // Or should the parametric query be kept as a named KB, and bound & returned each time? <-- pref.
+
+    VersionedIdentifier kbId = paramQuery.getAssetId();
+    Answer<KnowledgeBase> paramQueryKb =
+        termsKBManager.getKnowledgeBase(Util.toUUID(kbId.getTag()), kbId.getVersion());
+
+    if (!paramQueryKb.isSuccess()) {
+      termsKBManager.initKnowledgeBase(new KnowledgeAsset().withAssetId(paramQuery.getAssetId()))
+          .map(DatatypeHelper::deRef)
+          .flatMap(newKbId ->
+              termsKBManager.populateKnowledgeBase(Util.toUUID(newKbId.getTag()), newKbId.getVersion(), paramQuery));
+    }
+
+    // TODO fix the identifiers so that this chain is simpler and smoother
+    return termsKBManager.bind(Util.toUUID(kbId.getTag()), kbId.getVersion(), bindings)
         .map(DatatypeHelper::deRef)
-        .flatMap(kbId -> termsKB.populateKnowledgeBase(uuid(kbId.getTag()),kbId.getVersion(),paramQuery))
-        .map(DatatypeHelper::deRef)
-        .flatMap(kbId -> termsKB.bind(uuid(kbId.getTag()),kbId.getVersion(),bindings))
-        .map(DatatypeHelper::deRef)
-        .flatMap(kbId -> termsKB.getKnowledgeBase(uuid(kbId.getTag()),kbId.getVersion()))
+        .flatMap(queryBasekbId -> termsKBManager
+            .getKnowledgeBase(Util.toUUID(queryBasekbId.getTag()),queryBasekbId.getVersion()))
         .map(KnowledgeBase::getManifestation);
   }
 
   private KnowledgeCarrier loadParametricQuery(String path) {
     KnowledgeCarrier binary = AbstractCarrier
         .of(TermsServer.class.getResourceAsStream(path))
-        .withRepresentation(rep(SPARQL_1_1));
+        .withRepresentation(rep(SPARQL_1_1))
+        .withAssetId(DatatypeHelper.uri(Util.uuid(path).toString(),"0.0.0"));
+
     return sparqlParser.lift(binary, Parsed_Knowedge_Expression)
+        // TODO : carrying over the IDs is a responsibility of the lifter
+        .map(kc -> kc.withAssetId(binary.getAssetId()))
         .orElseThrow(
             () -> new BeanInitializationException("Unable to load necessary query from " + path));
   }

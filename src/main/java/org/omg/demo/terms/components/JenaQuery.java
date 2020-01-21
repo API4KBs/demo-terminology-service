@@ -16,6 +16,7 @@
 package org.omg.demo.terms.components;
 
 import edu.mayo.kmdp.inference.v3.server.QueryApiInternal._askQuery;
+import edu.mayo.kmdp.knowledgebase.v3.server.KnowledgeBaseApiInternal;
 import edu.mayo.kmdp.util.JenaUtil;
 import edu.mayo.kmdp.util.Util;
 import java.util.LinkedList;
@@ -26,6 +27,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
 import javax.inject.Named;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
@@ -42,21 +44,22 @@ import org.omg.spec.api4kp._1_0.services.KnowledgeCarrier;
 @Named
 public class JenaQuery implements _askQuery {
 
+  @Inject
+  KnowledgeBaseApiInternal kbManager;
+
   @Override
   public Answer<List<Bindings>> askQuery(UUID modelId, String versionTag, KnowledgeCarrier query) {
-    return null;
-  }
-
-  public Answer<List<Bindings>> askQuery(UUID lambdaId, KnowledgeBase kBase,
-      KnowledgeCarrier query) {
-    if (isLocal(kBase)) {
-      return Answer.of(kBase)
-          .map(KnowledgeBase::getManifestation)
-          .flatOpt(m -> m.asParseTree(Model.class))
-          .flatOpt(m -> applyQuery(query, m));
-    } else {
-      return askQueryRemote(kBase.getEndpoint().toString(), query);
-    }
+    return kbManager.getKnowledgeBase(modelId, versionTag)
+        .flatMap(kBase -> {
+          if (isLocal(kBase)) {
+            return Answer.of(kBase)
+                .map(KnowledgeBase::getManifestation)
+                .flatOpt(m -> m.asParseTree(Model.class))
+                .flatOpt(m -> applyQuery(query, m));
+          } else {
+            return askQueryRemote(kBase.getEndpoint().toString(), query);
+          }
+        });
   }
 
   private boolean isLocal(KnowledgeBase kBase) {
