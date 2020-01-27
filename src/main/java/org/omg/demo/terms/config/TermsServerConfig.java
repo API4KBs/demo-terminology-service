@@ -17,8 +17,12 @@ package org.omg.demo.terms.config;
 
 import edu.mayo.kmdp.language.parsers.OWLParser;
 import edu.mayo.kmdp.language.parsers.lifters.SparqlLifter;
+import edu.mayo.kmdp.repository.artifact.KnowledgeArtifactRepositoryService;
+import edu.mayo.kmdp.repository.asset.KnowledgeAssetRepositoryServerConfig;
 import org.omg.demo.terms.TermsServer;
+import org.omg.spec.api4kp._1_0.services.KPServer;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
@@ -36,5 +40,15 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableAutoConfiguration
 public class TermsServerConfig implements WebMvcConfigurer {
 
+  @Bean
+  @KPServer
+  public KnowledgeArtifactRepositoryService artifactRepo() {
+    return KnowledgeArtifactRepositoryService.inMemoryArtifactRepository();
+  }
+
+  @Bean
+  public KnowledgeAssetRepositoryServerConfig config() {
+    return new KnowledgeAssetRepositoryServerConfig();
+  }
 
 }
