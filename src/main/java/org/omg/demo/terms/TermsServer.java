@@ -21,20 +21,24 @@ import static org.omg.spec.api4kp._1_0.AbstractCarrier.rep;
 import edu.mayo.kmdp.id.VersionedIdentifier;
 import edu.mayo.kmdp.id.helper.DatatypeHelper;
 import edu.mayo.kmdp.inference.v3.server.QueryApiInternal._askQuery;
+import edu.mayo.kmdp.knowledgebase.v3.server.BindingApiInternal._bind;
 import edu.mayo.kmdp.knowledgebase.v3.server.KnowledgeBaseApiInternal;
 import edu.mayo.kmdp.metadata.surrogate.ComputableKnowledgeArtifact;
 import edu.mayo.kmdp.metadata.surrogate.KnowledgeAsset;
 import edu.mayo.kmdp.metadata.surrogate.Representation;
+import edu.mayo.kmdp.registry.Registry;
 import edu.mayo.kmdp.repository.asset.KnowledgeAssetRepositoryService;
-import edu.mayo.kmdp.terms.v3.server.TermsApiInternal;
+import edu.mayo.kmdp.terms.v4.server.TermsApiInternal;
 import edu.mayo.kmdp.tranx.v3.server.DeserializeApiInternal;
 import edu.mayo.kmdp.util.Util;
 import edu.mayo.ontology.taxonomies.lexicon.LexiconSeries;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.omg.demo.terms.config.TermsPublisher;
 import org.omg.demo.terms.internal.TermsBuilder;
 import org.omg.demo.terms.internal.TermsQueryType;
 import org.omg.spec.api4kp._1_0.AbstractCarrier;
@@ -61,6 +65,11 @@ public class TermsServer implements TermsApiInternal {
   @Inject
   // Load and perform reasoning with terminology systems
   private KnowledgeBaseApiInternal termsKBManager;
+
+  @Inject
+  @KPSupport(SPARQL_1_1)
+  private _bind binder;
+
   @Inject
   private _askQuery inquirer;
 
@@ -72,10 +81,17 @@ public class TermsServer implements TermsApiInternal {
   @Inject
   private TermsBuilder termsBuilder;
 
+  @Inject
+  private TermsPublisher initializer;
+
   public TermsServer() {
     //
   }
 
+  @PostConstruct
+  public void populateOnInit() {
+    initializer.initializeRepositoryContent();
+  }
 
   @Override
   public Answer<List<Pointer>> listTerminologies() {
@@ -87,12 +103,35 @@ public class TermsServer implements TermsApiInternal {
   }
 
   @Override
+  public Answer<Void> relatesTo(UUID vocabularyId, String versionTag, String conceptId,
+      String relationshipId) {
+    return Answer.unsupported();
+  }
+
+  @Override
+  public Answer<ConceptIdentifier> getTerm(UUID vocabularyId, String versionTag, String conceptId) {
+    return Answer.unsupported();
+  }
+
+  @Override
   public Answer<List<ConceptIdentifier>> getTerms(
       UUID vocabularyId, String versionTag,
       String labelFilter) {
     return knowledgeAssetCatalog.getVersionedKnowledgeAsset(vocabularyId, versionTag)
         .flatMap(vocabularyMetadata -> getTermsForVocabulary(vocabularyMetadata, labelFilter));
   }
+
+  @Override
+  public Answer<KnowledgeCarrier> getVocabulary(UUID vocabularyId, String versionTag,
+      String xAccept) {
+    return Answer.unsupported();
+  }
+
+  @Override
+  public Answer<Void> isMember(UUID vocabularyId, String versionTag, String conceptExpression) {
+    return Answer.unsupported();
+  }
+
 
   private Answer<List<ConceptIdentifier>> getTermsForVocabulary(KnowledgeAsset vocabularyMetadata,
       String labelFilter) {
@@ -137,7 +176,7 @@ public class TermsServer implements TermsApiInternal {
     }
 
     // TODO fix the identifiers so that this chain is simpler and smoother
-    return termsKBManager.bind(Util.toUUID(kbId.getTag()), kbId.getVersion(), bindings)
+    return binder.bind(Util.toUUID(kbId.getTag()), kbId.getVersion(), bindings)
         .map(DatatypeHelper::deRef)
         .flatMap(queryBasekbId -> termsKBManager
             .getKnowledgeBase(Util.toUUID(queryBasekbId.getTag()),queryBasekbId.getVersion()))
@@ -148,7 +187,7 @@ public class TermsServer implements TermsApiInternal {
     KnowledgeCarrier binary = AbstractCarrier
         .of(TermsServer.class.getResourceAsStream(path))
         .withRepresentation(rep(SPARQL_1_1))
-        .withAssetId(DatatypeHelper.uri(Util.uuid(path).toString(),"0.0.0"));
+        .withAssetId(DatatypeHelper.uri(Registry.BASE_UUID_URN, Util.uuid(path).toString(),"0.0.0"));
 
     return sparqlParser.lift(binary, Parsed_Knowedge_Expression)
         // TODO : carrying over the IDs is a responsibility of the lifter

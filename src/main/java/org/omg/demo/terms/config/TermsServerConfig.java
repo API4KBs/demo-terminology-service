@@ -15,10 +15,14 @@
  */
 package org.omg.demo.terms.config;
 
-import edu.mayo.kmdp.language.parsers.OWLParser;
-import edu.mayo.kmdp.language.parsers.lifters.SparqlLifter;
+import edu.mayo.kmdp.kbase.query.sparql.v1_1.JenaQuery;
+import edu.mayo.kmdp.knowledgebase.binders.sparql.v1_1.SparqlQueryBinder;
+import edu.mayo.kmdp.language.parsers.owl2.JenaOwlRdfLifter;
+import edu.mayo.kmdp.language.parsers.owl2.OWLParser;
+import edu.mayo.kmdp.language.parsers.sparql.SparqlLifter;
 import edu.mayo.kmdp.repository.artifact.KnowledgeArtifactRepositoryService;
 import edu.mayo.kmdp.repository.asset.KnowledgeAssetRepositoryServerConfig;
+import edu.mayo.kmdp.repository.asset.KnowledgeAssetRepositoryService;
 import org.omg.demo.terms.TermsServer;
 import org.omg.spec.api4kp._1_0.services.KPServer;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -27,6 +31,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -34,11 +39,21 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @ComponentScan(
     basePackageClasses = {
         TermsServer.class,
+        JenaQuery.class,
+        JenaOwlRdfLifter.class,
+        SparqlQueryBinder.class,
         SparqlLifter.class},
     excludeFilters = {@Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {OWLParser.class})})
 @PropertySource("classpath:application.properties")
 @EnableAutoConfiguration
 public class TermsServerConfig implements WebMvcConfigurer {
+
+  @Bean
+  @KPServer
+  @Primary
+  public KnowledgeAssetRepositoryService embeddedAssetRepository() {
+    return KnowledgeAssetRepositoryService.selfContainedRepository();
+  }
 
   @Bean
   @KPServer

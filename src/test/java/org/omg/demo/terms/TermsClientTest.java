@@ -23,7 +23,7 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.omg.demo.terms.config.TermsServerConfig;
-import org.omg.demo.terms.config.TermsTestHelper;
+import org.omg.demo.terms.config.TermsPublisher;
 import org.omg.demo.terms.config.TestConfig;
 import org.omg.spec.api4kp._1_0.identifiers.ConceptIdentifier;
 import org.omg.spec.api4kp._1_0.identifiers.Pointer;
@@ -38,14 +38,6 @@ public class TermsClientTest {
   @Inject
   @KPServer
   TermsServer termsServer;
-
-  @Inject
-  TermsTestHelper helper;
-
-  @BeforeEach
-  void init() {
-    helper.initializeRepositoryContent();
-  }
 
   @Test
   void testServer() {
@@ -63,7 +55,7 @@ public class TermsClientTest {
 
     // List the terms in a given vocabulary
     List<ConceptIdentifier> termsLocal = termsServer
-        .getTerms(TermsTestHelper.ESWC_ASSET_UUID, TermsTestHelper.ONTOLOGY_VERSION)
+        .getTerms(TermsPublisher.ESWC_ASSET_UUID, TermsPublisher.ONTOLOGY_VERSION)
         .orElse(emptyList());
 
 //    List<ConceptIdentifier> termsVirtuoso = termsServer
@@ -71,7 +63,7 @@ public class TermsClientTest {
 //        .orElse(Collections.emptyList());
 
     List<ConceptIdentifier> termsDBpedia = termsServer
-        .getTerms(TermsTestHelper.DBPEDIA_ASSET_UUID, TermsTestHelper.ONTOLOGY_VERSION, null)
+        .getTerms(TermsPublisher.DBPEDIA_ASSET_UUID, TermsPublisher.ONTOLOGY_VERSION, null)
         .orElse(emptyList());
 
     /*

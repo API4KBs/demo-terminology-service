@@ -40,7 +40,7 @@ import org.omg.spec.api4kp._1_0.services.KPServer;
 import org.omg.spec.api4kp._1_0.services.KnowledgeCarrier;
 
 @Named
-public class TermsTestHelper {
+public class TermsPublisher {
 
   @Inject
   @KPServer
@@ -48,7 +48,7 @@ public class TermsTestHelper {
 
   public static final URI ENDPOINT_LOCAL_VIRTUOSO     = URI.create("http://localhost:8890/sparql/");
   public static final URI ENDPOINT_DBPEDIA            = URI.create("https://dbpedia.org/sparql");
-  public static final String LOCAL_PATH               = "/eswc20060921.rdf";
+  public static final String LOCAL_PATH               = "/rdf/eswc20060921.rdf";
 
   public static final URI ESWC_ONTOLOGY_URI           = URI.create("http://www.eswc2006.org/technologies/ontology");
   public static final UUID ESWC_ASSET_UUID            = UUID.nameUUIDFromBytes(ESWC_ONTOLOGY_URI.toString().getBytes());
@@ -63,15 +63,14 @@ public class TermsTestHelper {
     addDBPediaVocabulary();
   }
 
-
-
   public void addDBPediaVocabulary() {
 
-    UUID artifactUUID = UUID.nameUUIDFromBytes(DBPEDIA_ONTOLOGY_URI.toString().getBytes());
+    UUID artifactUUID = UUID.nameUUIDFromBytes(DBPEDIA_ASSET_UUID.toString().getBytes());
 
-    URIIdentifier testOntologyId = vuri(
-        BASE_UUID_URN + DBPEDIA_ASSET_UUID,
-        BASE_UUID_URN + DBPEDIA_ASSET_UUID + ":" + ONTOLOGY_VERSION
+    URIIdentifier testOntologyId = uri(
+        BASE_UUID_URN,
+        DBPEDIA_ASSET_UUID.toString(),
+        ONTOLOGY_VERSION
     );
 
     URIIdentifier testDocumentId = vuri(
@@ -132,7 +131,7 @@ public class TermsTestHelper {
         );
 
     KnowledgeCarrier carrier = AbstractCarrier
-        .of(TermsTestHelper.class.getResourceAsStream(LOCAL_PATH))
+        .of(TermsPublisher.class.getResourceAsStream(LOCAL_PATH))
         .withAssetId(testOntologyId)
         .withArtifactId(testDocumentId)
         .withRepresentation(canonicalRepresentationOf(metadata));
