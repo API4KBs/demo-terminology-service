@@ -17,7 +17,7 @@ package org.omg.demo.terms.config;
 
 import edu.mayo.kmdp.kbase.query.sparql.v1_1.JenaQuery;
 import edu.mayo.kmdp.knowledgebase.binders.sparql.v1_1.SparqlQueryBinder;
-import edu.mayo.kmdp.language.parsers.owl2.JenaOwlRdfLifter;
+import edu.mayo.kmdp.language.parsers.owl2.JenaOwlParser;
 import edu.mayo.kmdp.language.parsers.owl2.OWLParser;
 import edu.mayo.kmdp.language.parsers.sparql.SparqlLifter;
 import edu.mayo.kmdp.repository.artifact.KnowledgeArtifactRepositoryService;
@@ -40,7 +40,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
     basePackageClasses = {
         TermsServer.class,
         JenaQuery.class,
-        JenaOwlRdfLifter.class,
+        JenaOwlParser.class,
         SparqlQueryBinder.class,
         SparqlLifter.class},
     excludeFilters = {@Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {OWLParser.class})})

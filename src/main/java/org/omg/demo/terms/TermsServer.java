@@ -17,19 +17,18 @@ import static edu.mayo.ontology.taxonomies.api4kp.parsinglevel.ParsingLevelSerie
 import static edu.mayo.ontology.taxonomies.kao.knowledgeassettype.KnowledgeAssetTypeSeries.Formal_Ontology;
 import static edu.mayo.ontology.taxonomies.krlanguage.KnowledgeRepresentationLanguageSeries.SPARQL_1_1;
 import static org.omg.spec.api4kp._1_0.AbstractCarrier.rep;
+import static org.omg.spec.api4kp._1_0.id.IdentifierConstants.VERSION_ZERO;
 
-import edu.mayo.kmdp.id.VersionedIdentifier;
-import edu.mayo.kmdp.id.helper.DatatypeHelper;
-import edu.mayo.kmdp.inference.v3.server.QueryApiInternal._askQuery;
-import edu.mayo.kmdp.knowledgebase.v3.server.BindingApiInternal._bind;
-import edu.mayo.kmdp.knowledgebase.v3.server.KnowledgeBaseApiInternal;
-import edu.mayo.kmdp.metadata.surrogate.ComputableKnowledgeArtifact;
-import edu.mayo.kmdp.metadata.surrogate.KnowledgeAsset;
-import edu.mayo.kmdp.metadata.surrogate.Representation;
-import edu.mayo.kmdp.registry.Registry;
+import edu.mayo.kmdp.inference.v4.server.QueryApiInternal._askQuery;
+import edu.mayo.kmdp.knowledgebase.v4.server.BindingApiInternal._bind;
+import edu.mayo.kmdp.knowledgebase.v4.server.KnowledgeBaseApiInternal;
+import edu.mayo.kmdp.metadata.v2.surrogate.ComputableKnowledgeArtifact;
+import edu.mayo.kmdp.metadata.v2.surrogate.KnowledgeAsset;
+import edu.mayo.kmdp.metadata.v2.surrogate.SurrogateBuilder;
 import edu.mayo.kmdp.repository.asset.KnowledgeAssetRepositoryService;
+import edu.mayo.kmdp.terms.impl.model.ConceptDescriptor;
 import edu.mayo.kmdp.terms.v4.server.TermsApiInternal;
-import edu.mayo.kmdp.tranx.v3.server.DeserializeApiInternal;
+import edu.mayo.kmdp.tranx.v4.server.DeserializeApiInternal;
 import edu.mayo.kmdp.util.Util;
 import edu.mayo.ontology.taxonomies.lexicon.LexiconSeries;
 import java.util.Arrays;
@@ -44,13 +43,14 @@ import org.omg.demo.terms.internal.TermsQueryType;
 import org.omg.spec.api4kp._1_0.AbstractCarrier;
 import org.omg.spec.api4kp._1_0.Answer;
 import org.omg.spec.api4kp._1_0.datatypes.Bindings;
+import org.omg.spec.api4kp._1_0.id.Pointer;
+import org.omg.spec.api4kp._1_0.id.ResourceIdentifier;
 import org.omg.spec.api4kp._1_0.identifiers.ConceptIdentifier;
-import org.omg.spec.api4kp._1_0.identifiers.Pointer;
-import org.omg.spec.api4kp._1_0.identifiers.URIIdentifier;
 import org.omg.spec.api4kp._1_0.services.KPServer;
 import org.omg.spec.api4kp._1_0.services.KPSupport;
 import org.omg.spec.api4kp._1_0.services.KnowledgeBase;
 import org.omg.spec.api4kp._1_0.services.KnowledgeCarrier;
+import org.omg.spec.api4kp._1_0.services.SyntacticRepresentation;
 import org.springframework.beans.factory.BeanInitializationException;
 
 @Named
@@ -76,7 +76,7 @@ public class TermsServer implements TermsApiInternal {
   @Inject
   @KPSupport(SPARQL_1_1)
   // Parse...
-  private DeserializeApiInternal._lift sparqlParser;
+  private DeserializeApiInternal._applyLift sparqlParser;
 
   @Inject
   private TermsBuilder termsBuilder;
@@ -99,25 +99,20 @@ public class TermsServer implements TermsApiInternal {
         knowledgeAssetCatalog.listKnowledgeAssets(
             Formal_Ontology.getTag(),
             null,
+            null,
             0, -1);
   }
 
   @Override
-  public Answer<Void> relatesTo(UUID vocabularyId, String versionTag, String conceptId,
-      String relationshipId) {
+  public Answer<ConceptDescriptor> getTerm(UUID vocabularyId, String versionTag, String conceptId) {
     return Answer.unsupported();
   }
 
   @Override
-  public Answer<ConceptIdentifier> getTerm(UUID vocabularyId, String versionTag, String conceptId) {
-    return Answer.unsupported();
-  }
-
-  @Override
-  public Answer<List<ConceptIdentifier>> getTerms(
+  public Answer<List<ConceptDescriptor>> getTerms(
       UUID vocabularyId, String versionTag,
       String labelFilter) {
-    return knowledgeAssetCatalog.getVersionedKnowledgeAsset(vocabularyId, versionTag)
+    return knowledgeAssetCatalog.getKnowledgeAssetVersion(vocabularyId, versionTag)
         .flatMap(vocabularyMetadata -> getTermsForVocabulary(vocabularyMetadata, labelFilter));
   }
 
@@ -133,11 +128,10 @@ public class TermsServer implements TermsApiInternal {
   }
 
 
-  private Answer<List<ConceptIdentifier>> getTermsForVocabulary(KnowledgeAsset vocabularyMetadata,
+  private Answer<List<ConceptDescriptor>> getTermsForVocabulary(KnowledgeAsset vocabularyMetadata,
       String labelFilter) {
     TermsQueryType queryType = detectQueryType(vocabularyMetadata);
     return termsKBManager.initKnowledgeBase(vocabularyMetadata)
-        .map(DatatypeHelper::deRef)  // TODO this will no longer necessary in 6.x
         .flatMap(kBaseId ->
             getQuery(vocabularyMetadata, labelFilter, queryType)
                 .flatMap(boundQuery ->
@@ -145,11 +139,11 @@ public class TermsServer implements TermsApiInternal {
   }
 
 
-  private Answer<List<ConceptIdentifier>> doQuery(
-      VersionedIdentifier kBaseId,
+  private Answer<List<ConceptDescriptor>> doQuery(
+      ResourceIdentifier kBaseId,
       KnowledgeCarrier query,
       TermsQueryType queryType) {
-    return inquirer.askQuery(Util.toUUID(kBaseId.getTag()), kBaseId.getVersion(), query)
+    return inquirer.askQuery(kBaseId.getUuid(), kBaseId.getVersionTag(), query)
         .map(answer -> termsBuilder.buildTerms(answer, queryType));
   }
 
@@ -164,22 +158,21 @@ public class TermsServer implements TermsApiInternal {
     //TODO Should binding variables to a query more lightweight than setting up a KB?
     // Or should the parametric query be kept as a named KB, and bound & returned each time? <-- pref.
 
-    VersionedIdentifier kbId = paramQuery.getAssetId();
+    ResourceIdentifier kbId = paramQuery.getAssetId();
     Answer<KnowledgeBase> paramQueryKb =
-        termsKBManager.getKnowledgeBase(Util.toUUID(kbId.getTag()), kbId.getVersion());
+        termsKBManager.getKnowledgeBase(kbId.getUuid(), kbId.getVersionTag());
 
     if (!paramQueryKb.isSuccess()) {
-      termsKBManager.initKnowledgeBase(new KnowledgeAsset().withAssetId(paramQuery.getAssetId()))
-          .map(DatatypeHelper::deRef)
+      termsKBManager.initKnowledgeBase(new KnowledgeAsset()
+          .withAssetId(paramQuery.getAssetId()))
           .flatMap(newKbId ->
-              termsKBManager.populateKnowledgeBase(Util.toUUID(newKbId.getTag()), newKbId.getVersion(), paramQuery));
+              termsKBManager.populateKnowledgeBase(newKbId.getUuid(), newKbId.getVersionTag(), paramQuery));
     }
 
     // TODO fix the identifiers so that this chain is simpler and smoother
-    return binder.bind(Util.toUUID(kbId.getTag()), kbId.getVersion(), bindings)
-        .map(DatatypeHelper::deRef)
+    return binder.bind(kbId.getUuid(), kbId.getVersionTag(), bindings)
         .flatMap(queryBasekbId -> termsKBManager
-            .getKnowledgeBase(Util.toUUID(queryBasekbId.getTag()),queryBasekbId.getVersion()))
+            .getKnowledgeBase(queryBasekbId.getUuid(),queryBasekbId.getVersionTag()))
         .map(KnowledgeBase::getManifestation);
   }
 
@@ -187,9 +180,9 @@ public class TermsServer implements TermsApiInternal {
     KnowledgeCarrier binary = AbstractCarrier
         .of(TermsServer.class.getResourceAsStream(path))
         .withRepresentation(rep(SPARQL_1_1))
-        .withAssetId(DatatypeHelper.uri(Registry.BASE_UUID_URN, Util.uuid(path).toString(),"0.0.0"));
+        .withAssetId(SurrogateBuilder.assetId(Util.uuid(path), VERSION_ZERO));
 
-    return sparqlParser.lift(binary, Parsed_Knowedge_Expression)
+    return sparqlParser.applyLift(binary, Parsed_Knowedge_Expression,null,null)
         // TODO : carrying over the IDs is a responsibility of the lifter
         .map(kc -> kc.withAssetId(binary.getAssetId()))
         .orElseThrow(
@@ -202,7 +195,7 @@ public class TermsServer implements TermsApiInternal {
       bindings.put("?label", labelFilter);
     }
     bindings.put("?vocabulary",
-        ((URIIdentifier) vocMetadata.getSecondaryId().get(0)).getUri());
+        ((ResourceIdentifier) vocMetadata.getSecondaryId().get(0)).getResourceId());
     return bindings;
   }
 
@@ -210,7 +203,7 @@ public class TermsServer implements TermsApiInternal {
     // TODO: discuss how to generalize this
     ComputableKnowledgeArtifact cka =
         (ComputableKnowledgeArtifact) vocMetadata.getCarriers().get(0);
-    Representation representation = cka.getRepresentation();
+    SyntacticRepresentation representation = cka.getRepresentation();
 
     return Arrays.stream(TermsQueryType.values())
         .flatMap(queryType -> queryType.appliesTo(cka.getLocator()))

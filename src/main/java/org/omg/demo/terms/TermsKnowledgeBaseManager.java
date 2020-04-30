@@ -17,8 +17,8 @@ import static edu.mayo.ontology.taxonomies.api4kp.parsinglevel.ParsingLevelSerie
 import static edu.mayo.ontology.taxonomies.krlanguage.KnowledgeRepresentationLanguageSeries.OWL_2;
 
 import edu.mayo.kmdp.knowledgebase.KnowledgeBaseProvider;
-import edu.mayo.kmdp.repository.asset.v3.server.KnowledgeAssetRepositoryApiInternal;
-import edu.mayo.kmdp.tranx.v3.server.DeserializeApiInternal;
+import edu.mayo.kmdp.repository.asset.v4.server.KnowledgeAssetRepositoryApiInternal;
+import edu.mayo.kmdp.tranx.v4.server.DeserializeApiInternal;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.omg.spec.api4kp._1_0.services.KPServer;
@@ -32,7 +32,7 @@ public class TermsKnowledgeBaseManager extends KnowledgeBaseProvider {
 
   @Inject
   @KPSupport(OWL_2)
-  private DeserializeApiInternal._lift ontologyParser;
+  private DeserializeApiInternal._applyLift ontologyParser;
 
   @Autowired
   public TermsKnowledgeBaseManager(
@@ -43,10 +43,11 @@ public class TermsKnowledgeBaseManager extends KnowledgeBaseProvider {
 
   protected KnowledgeBase configureAsLocalKB(KnowledgeBase kBase, KnowledgeCarrier kc) {
     if (kc.getRepresentation().getLanguage().sameAs(OWL_2)) {
-      return super.configureAsLocalKB(kBase,ontologyParser.lift(kc, Parsed_Knowedge_Expression)
-          .orElseThrow(IllegalArgumentException::new));
+      return super.configureAsLocalKB(kBase,
+          ontologyParser.applyLift(kc, Parsed_Knowedge_Expression, null, null)
+              .orElseThrow(IllegalArgumentException::new));
     }
-    return super.configureAsLocalKB(kBase,kc);
+    return super.configureAsLocalKB(kBase, kc);
   }
 
 

@@ -18,15 +18,14 @@ package org.omg.demo.terms;
 import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import edu.mayo.kmdp.terms.impl.model.ConceptDescriptor;
 import java.util.List;
 import javax.inject.Inject;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.omg.demo.terms.config.TermsServerConfig;
 import org.omg.demo.terms.config.TermsPublisher;
+import org.omg.demo.terms.config.TermsServerConfig;
 import org.omg.demo.terms.config.TestConfig;
-import org.omg.spec.api4kp._1_0.identifiers.ConceptIdentifier;
-import org.omg.spec.api4kp._1_0.identifiers.Pointer;
+import org.omg.spec.api4kp._1_0.id.Pointer;
 import org.omg.spec.api4kp._1_0.services.KPServer;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
@@ -50,11 +49,11 @@ public class TermsClientTest {
 
     for (Pointer entity : vocabsAnswer) {
       System.out.println(
-          "vocabsAnswer name: " + entity.getName() + ", Type " + entity.getEntityRef().getUri());
+          "vocabsAnswer name: " + entity.getName() + ", Type " + entity.getHref());
     }
 
     // List the terms in a given vocabulary
-    List<ConceptIdentifier> termsLocal = termsServer
+    List<ConceptDescriptor> termsLocal = termsServer
         .getTerms(TermsPublisher.ESWC_ASSET_UUID, TermsPublisher.ONTOLOGY_VERSION)
         .orElse(emptyList());
 
@@ -62,7 +61,7 @@ public class TermsClientTest {
 //        .getTerms(toUUID(assetId.getTag()), assetId.getVersion(), null)
 //        .orElse(Collections.emptyList());
 
-    List<ConceptIdentifier> termsDBpedia = termsServer
+    List<ConceptDescriptor> termsDBpedia = termsServer
         .getTerms(TermsPublisher.DBPEDIA_ASSET_UUID, TermsPublisher.ONTOLOGY_VERSION, null)
         .orElse(emptyList());
 
@@ -70,9 +69,9 @@ public class TermsClientTest {
      * Print Results:
      */
     System.out.println("\n-------------- Local Terms --------------- ");
-    for (ConceptIdentifier conceptIdentifier : termsLocal) {
+    for (ConceptDescriptor conceptIdentifier : termsLocal) {
       System.out.println(
-          "ConceptIdentifier label : " + conceptIdentifier.getLabel() + ". conceptIdentifier Tag : "
+          "ConceptIdentifier label : " + conceptIdentifier.getName() + ". conceptIdentifier Tag : "
               + conceptIdentifier.getTag());
     }
 
@@ -81,9 +80,9 @@ public class TermsClientTest {
 //      System.out.println("ConceptIdentifier label : "+conceptIdentifier.getLabel()+". conceptIdentifier Tag : "+conceptIdentifier.getTag());
 
     System.out.println("\n-------------- Terms from dbpedia.org --------------- ");
-    for (ConceptIdentifier conceptIdentifier : termsDBpedia) {
+    for (ConceptDescriptor conceptIdentifier : termsDBpedia) {
       System.out.println(
-          "ConceptIdentifier label : " + conceptIdentifier.getLabel() + ". conceptIdentifier Tag : "
+          "ConceptIdentifier label : " + conceptIdentifier.getName() + ". conceptIdentifier Tag : "
               + conceptIdentifier.getTag());
     }
   }
