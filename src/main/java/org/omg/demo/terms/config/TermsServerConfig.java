@@ -20,11 +20,13 @@ import edu.mayo.kmdp.knowledgebase.binders.sparql.v1_1.SparqlQueryBinder;
 import edu.mayo.kmdp.language.parsers.owl2.JenaOwlParser;
 import edu.mayo.kmdp.language.parsers.owl2.OWLParser;
 import edu.mayo.kmdp.language.parsers.sparql.SparqlLifter;
+import edu.mayo.kmdp.registry.Registry;
 import edu.mayo.kmdp.repository.artifact.KnowledgeArtifactRepositoryService;
 import edu.mayo.kmdp.repository.asset.KnowledgeAssetRepositoryServerConfig;
+import edu.mayo.kmdp.repository.asset.KnowledgeAssetRepositoryServerConfig.KnowledgeAssetRepositoryOptions;
 import edu.mayo.kmdp.repository.asset.KnowledgeAssetRepositoryService;
 import org.omg.demo.terms.TermsServer;
-import org.omg.spec.api4kp._1_0.services.KPServer;
+import org.omg.spec.api4kp._20200801.services.KPServer;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -52,7 +54,7 @@ public class TermsServerConfig implements WebMvcConfigurer {
   @KPServer
   @Primary
   public KnowledgeAssetRepositoryService embeddedAssetRepository() {
-    return KnowledgeAssetRepositoryService.selfContainedRepository();
+    return KnowledgeAssetRepositoryService.selfContainedRepository(config());
   }
 
   @Bean
@@ -63,7 +65,9 @@ public class TermsServerConfig implements WebMvcConfigurer {
 
   @Bean
   public KnowledgeAssetRepositoryServerConfig config() {
-    return new KnowledgeAssetRepositoryServerConfig();
+    return new KnowledgeAssetRepositoryServerConfig()
+        .with(KnowledgeAssetRepositoryOptions.ASSET_NAMESPACE, Registry.BASE_UUID_URN)
+        .with(KnowledgeAssetRepositoryOptions.ARTIFACT_NAMESPACE, Registry.BASE_UUID_URN);
   }
 
 }

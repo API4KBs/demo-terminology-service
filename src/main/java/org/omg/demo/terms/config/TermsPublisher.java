@@ -15,26 +15,26 @@
  */
 package org.omg.demo.terms.config;
 
-import static edu.mayo.ontology.taxonomies.kao.knowledgeassetcategory.KnowledgeAssetCategorySeries.Terminology_Ontology_And_Assertional_KBs;
-import static edu.mayo.ontology.taxonomies.kao.knowledgeassettype.KnowledgeAssetTypeSeries.Formal_Ontology;
-import static edu.mayo.ontology.taxonomies.krformat.SerializationFormatSeries.XML_1_1;
-import static edu.mayo.ontology.taxonomies.krlanguage.KnowledgeRepresentationLanguageSeries.OWL_2;
-import static edu.mayo.ontology.taxonomies.krserialization.KnowledgeRepresentationLanguageSerializationSeries.RDF_XML_Syntax;
-import static org.omg.spec.api4kp._1_0.AbstractCarrier.rep;
+import static org.omg.spec.api4kp._20200801.AbstractCarrier.rep;
+import static org.omg.spec.api4kp._20200801.taxonomy.knowledgeassetcategory.KnowledgeAssetCategorySeries.Terminology_Ontology_And_Assertional_KBs;
+import static org.omg.spec.api4kp._20200801.taxonomy.knowledgeassettype.KnowledgeAssetTypeSeries.Formal_Ontology;
+import static org.omg.spec.api4kp._20200801.taxonomy.krformat.SerializationFormatSeries.XML_1_1;
+import static org.omg.spec.api4kp._20200801.taxonomy.krlanguage.KnowledgeRepresentationLanguageSeries.OWL_2;
+import static org.omg.spec.api4kp._20200801.taxonomy.krserialization.KnowledgeRepresentationLanguageSerializationSeries.RDF_XML_Syntax;
+import static org.omg.spec.api4kp._20200801.taxonomy.lexicon.LexiconSeries.SKOS;
 
-import edu.mayo.kmdp.metadata.v2.surrogate.ComputableKnowledgeArtifact;
-import edu.mayo.kmdp.metadata.v2.surrogate.KnowledgeAsset;
 import edu.mayo.kmdp.repository.asset.KnowledgeAssetRepositoryService;
-import edu.mayo.ontology.taxonomies.lexicon.LexiconSeries;
 import java.net.URI;
 import java.util.UUID;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.omg.spec.api4kp._1_0.AbstractCarrier;
-import org.omg.spec.api4kp._1_0.id.ResourceIdentifier;
-import org.omg.spec.api4kp._1_0.id.SemanticIdentifier;
-import org.omg.spec.api4kp._1_0.services.KPServer;
-import org.omg.spec.api4kp._1_0.services.KnowledgeCarrier;
+import org.omg.spec.api4kp._20200801.AbstractCarrier;
+import org.omg.spec.api4kp._20200801.id.ResourceIdentifier;
+import org.omg.spec.api4kp._20200801.id.SemanticIdentifier;
+import org.omg.spec.api4kp._20200801.services.KPServer;
+import org.omg.spec.api4kp._20200801.services.KnowledgeCarrier;
+import org.omg.spec.api4kp._20200801.surrogate.KnowledgeArtifact;
+import org.omg.spec.api4kp._20200801.surrogate.KnowledgeAsset;
 
 @Named
 public class TermsPublisher {
@@ -81,10 +81,10 @@ public class TermsPublisher {
         .withDescription("DBPedia Vocabularies")
         .withFormalCategory(Terminology_Ontology_And_Assertional_KBs)
         .withFormalType(Formal_Ontology)
-        .withCarriers(new ComputableKnowledgeArtifact()
+        .withCarriers(new KnowledgeArtifact()
             .withArtifactId(testDocumentId)
             .withRepresentation(rep(OWL_2,RDF_XML_Syntax,XML_1_1)
-                .withLexicon(LexiconSeries.SKOS))
+                .withLexicon(SKOS))
             .withLocator(ENDPOINT_DBPEDIA)
         );
 
@@ -114,7 +114,7 @@ public class TermsPublisher {
         .withDescription("A test vocabulary")
         .withFormalCategory(Terminology_Ontology_And_Assertional_KBs)
         .withFormalType(Formal_Ontology)
-        .withCarriers(new ComputableKnowledgeArtifact()
+        .withCarriers(new KnowledgeArtifact()
             .withArtifactId(testDocumentId)
             .withRepresentation(rep(OWL_2,RDF_XML_Syntax,XML_1_1))
             .withLocator(URI.create(LOCAL_PATH))
@@ -124,7 +124,7 @@ public class TermsPublisher {
         .of(TermsPublisher.class.getResourceAsStream(LOCAL_PATH))
         .withAssetId(testOntologyId)
         .withArtifactId(testDocumentId)
-        .withRepresentation(((ComputableKnowledgeArtifact)metadata.getCarriers().get(0)).getRepresentation());
+        .withRepresentation((metadata.getCarriers().get(0)).getRepresentation());
 
     assetRepo.publish(metadata,carrier);
   }

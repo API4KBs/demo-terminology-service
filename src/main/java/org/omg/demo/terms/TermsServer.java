@@ -13,24 +13,15 @@
  */
 package org.omg.demo.terms;
 
-import static edu.mayo.ontology.taxonomies.api4kp.parsinglevel.ParsingLevelSeries.Parsed_Knowedge_Expression;
-import static edu.mayo.ontology.taxonomies.kao.knowledgeassettype.KnowledgeAssetTypeSeries.Formal_Ontology;
-import static edu.mayo.ontology.taxonomies.krlanguage.KnowledgeRepresentationLanguageSeries.SPARQL_1_1;
-import static org.omg.spec.api4kp._1_0.AbstractCarrier.rep;
-import static org.omg.spec.api4kp._1_0.id.IdentifierConstants.VERSION_ZERO;
+import static org.omg.spec.api4kp._20200801.AbstractCarrier.rep;
+import static org.omg.spec.api4kp._20200801.id.IdentifierConstants.VERSION_ZERO;
+import static org.omg.spec.api4kp._20200801.taxonomy.knowledgeassettype.KnowledgeAssetTypeSeries.Formal_Ontology;
+import static org.omg.spec.api4kp._20200801.taxonomy.krlanguage.KnowledgeRepresentationLanguageSeries.SPARQL_1_1;
+import static org.omg.spec.api4kp._20200801.taxonomy.lexicon.LexiconSeries.SKOS;
+import static org.omg.spec.api4kp._20200801.taxonomy.parsinglevel.ParsingLevelSeries.Concrete_Knowledge_Expression;
 
-import edu.mayo.kmdp.inference.v4.server.QueryApiInternal._askQuery;
-import edu.mayo.kmdp.knowledgebase.v4.server.BindingApiInternal._bind;
-import edu.mayo.kmdp.knowledgebase.v4.server.KnowledgeBaseApiInternal;
-import edu.mayo.kmdp.metadata.v2.surrogate.ComputableKnowledgeArtifact;
-import edu.mayo.kmdp.metadata.v2.surrogate.KnowledgeAsset;
-import edu.mayo.kmdp.metadata.v2.surrogate.SurrogateBuilder;
 import edu.mayo.kmdp.repository.asset.KnowledgeAssetRepositoryService;
-import edu.mayo.kmdp.terms.impl.model.ConceptDescriptor;
-import edu.mayo.kmdp.terms.v4.server.TermsApiInternal;
-import edu.mayo.kmdp.tranx.v4.server.DeserializeApiInternal;
 import edu.mayo.kmdp.util.Util;
-import edu.mayo.ontology.taxonomies.lexicon.LexiconSeries;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -40,17 +31,25 @@ import javax.inject.Named;
 import org.omg.demo.terms.config.TermsPublisher;
 import org.omg.demo.terms.internal.TermsBuilder;
 import org.omg.demo.terms.internal.TermsQueryType;
-import org.omg.spec.api4kp._1_0.AbstractCarrier;
-import org.omg.spec.api4kp._1_0.Answer;
-import org.omg.spec.api4kp._1_0.datatypes.Bindings;
-import org.omg.spec.api4kp._1_0.id.Pointer;
-import org.omg.spec.api4kp._1_0.id.ResourceIdentifier;
-import org.omg.spec.api4kp._1_0.identifiers.ConceptIdentifier;
-import org.omg.spec.api4kp._1_0.services.KPServer;
-import org.omg.spec.api4kp._1_0.services.KPSupport;
-import org.omg.spec.api4kp._1_0.services.KnowledgeBase;
-import org.omg.spec.api4kp._1_0.services.KnowledgeCarrier;
-import org.omg.spec.api4kp._1_0.services.SyntacticRepresentation;
+import org.omg.spec.api4kp._20200801.AbstractCarrier;
+import org.omg.spec.api4kp._20200801.Answer;
+import org.omg.spec.api4kp._20200801.api.inference.v4.server.QueryApiInternal._askQuery;
+import org.omg.spec.api4kp._20200801.api.knowledgebase.v4.server.BindingApiInternal._bind;
+import org.omg.spec.api4kp._20200801.api.knowledgebase.v4.server.KnowledgeBaseApiInternal;
+import org.omg.spec.api4kp._20200801.api.terminology.v4.server.TermsApiInternal;
+import org.omg.spec.api4kp._20200801.api.transrepresentation.v4.server.DeserializeApiInternal;
+import org.omg.spec.api4kp._20200801.datatypes.Bindings;
+import org.omg.spec.api4kp._20200801.id.Pointer;
+import org.omg.spec.api4kp._20200801.id.ResourceIdentifier;
+import org.omg.spec.api4kp._20200801.services.KPServer;
+import org.omg.spec.api4kp._20200801.services.KPSupport;
+import org.omg.spec.api4kp._20200801.services.KnowledgeBase;
+import org.omg.spec.api4kp._20200801.services.KnowledgeCarrier;
+import org.omg.spec.api4kp._20200801.services.SyntacticRepresentation;
+import org.omg.spec.api4kp._20200801.surrogate.KnowledgeArtifact;
+import org.omg.spec.api4kp._20200801.surrogate.KnowledgeAsset;
+import org.omg.spec.api4kp._20200801.surrogate.SurrogateBuilder;
+import org.omg.spec.api4kp._20200801.terms.model.ConceptDescriptor;
 import org.springframework.beans.factory.BeanInitializationException;
 
 @Named
@@ -182,7 +181,7 @@ public class TermsServer implements TermsApiInternal {
         .withRepresentation(rep(SPARQL_1_1))
         .withAssetId(SurrogateBuilder.assetId(Util.uuid(path), VERSION_ZERO));
 
-    return sparqlParser.applyLift(binary, Parsed_Knowedge_Expression,null,null)
+    return sparqlParser.applyLift(binary, Concrete_Knowledge_Expression,null,null)
         // TODO : carrying over the IDs is a responsibility of the lifter
         .map(kc -> kc.withAssetId(binary.getAssetId()))
         .orElseThrow(
@@ -201,14 +200,13 @@ public class TermsServer implements TermsApiInternal {
 
   private TermsQueryType detectQueryType(KnowledgeAsset vocMetadata) {
     // TODO: discuss how to generalize this
-    ComputableKnowledgeArtifact cka =
-        (ComputableKnowledgeArtifact) vocMetadata.getCarriers().get(0);
+    KnowledgeArtifact cka = vocMetadata.getCarriers().get(0);
     SyntacticRepresentation representation = cka.getRepresentation();
 
     return Arrays.stream(TermsQueryType.values())
         .flatMap(queryType -> queryType.appliesTo(cka.getLocator()))
         .findAny()
-        .orElse(representation.getLexicon().contains(LexiconSeries.SKOS)
+        .orElse(representation.getLexicon().stream().anyMatch(lex -> lex.sameAs(SKOS))
             ? TermsQueryType.SKOS : TermsQueryType.OWL2);
   }
 

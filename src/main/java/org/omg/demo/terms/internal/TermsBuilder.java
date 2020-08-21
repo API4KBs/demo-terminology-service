@@ -1,12 +1,12 @@
 package org.omg.demo.terms.internal;
 
-import edu.mayo.kmdp.terms.impl.model.ConceptDescriptor;
 import edu.mayo.kmdp.util.NameUtils;
 import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.inject.Named;
-import org.omg.spec.api4kp._1_0.datatypes.Bindings;
+import org.omg.spec.api4kp._20200801.datatypes.Bindings;
+import org.omg.spec.api4kp._20200801.terms.model.ConceptDescriptor;
 
 @Named
 public class TermsBuilder {

@@ -13,18 +13,18 @@
  */
 package org.omg.demo.terms;
 
-import static edu.mayo.ontology.taxonomies.api4kp.parsinglevel.ParsingLevelSeries.Parsed_Knowedge_Expression;
-import static edu.mayo.ontology.taxonomies.krlanguage.KnowledgeRepresentationLanguageSeries.OWL_2;
+import static org.omg.spec.api4kp._20200801.taxonomy.krlanguage.KnowledgeRepresentationLanguageSeries.OWL_2;
+import static org.omg.spec.api4kp._20200801.taxonomy.parsinglevel.ParsingLevelSeries.Concrete_Knowledge_Expression;
 
 import edu.mayo.kmdp.knowledgebase.KnowledgeBaseProvider;
-import edu.mayo.kmdp.repository.asset.v4.server.KnowledgeAssetRepositoryApiInternal;
-import edu.mayo.kmdp.tranx.v4.server.DeserializeApiInternal;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.omg.spec.api4kp._1_0.services.KPServer;
-import org.omg.spec.api4kp._1_0.services.KPSupport;
-import org.omg.spec.api4kp._1_0.services.KnowledgeBase;
-import org.omg.spec.api4kp._1_0.services.KnowledgeCarrier;
+import org.omg.spec.api4kp._20200801.api.repository.asset.v4.server.KnowledgeAssetRepositoryApiInternal;
+import org.omg.spec.api4kp._20200801.api.transrepresentation.v4.server.DeserializeApiInternal;
+import org.omg.spec.api4kp._20200801.services.KPServer;
+import org.omg.spec.api4kp._20200801.services.KPSupport;
+import org.omg.spec.api4kp._20200801.services.KnowledgeBase;
+import org.omg.spec.api4kp._20200801.services.KnowledgeCarrier;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @Named
@@ -44,7 +44,7 @@ public class TermsKnowledgeBaseManager extends KnowledgeBaseProvider {
   protected KnowledgeBase configureAsLocalKB(KnowledgeBase kBase, KnowledgeCarrier kc) {
     if (kc.getRepresentation().getLanguage().sameAs(OWL_2)) {
       return super.configureAsLocalKB(kBase,
-          ontologyParser.applyLift(kc, Parsed_Knowedge_Expression, null, null)
+          ontologyParser.applyLift(kc, Concrete_Knowledge_Expression, null, null)
               .orElseThrow(IllegalArgumentException::new));
     }
     return super.configureAsLocalKB(kBase, kc);

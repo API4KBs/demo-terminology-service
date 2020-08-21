@@ -18,15 +18,15 @@ package org.omg.demo.terms;
 import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import edu.mayo.kmdp.terms.impl.model.ConceptDescriptor;
 import java.util.List;
 import javax.inject.Inject;
 import org.junit.jupiter.api.Test;
 import org.omg.demo.terms.config.TermsPublisher;
 import org.omg.demo.terms.config.TermsServerConfig;
 import org.omg.demo.terms.config.TestConfig;
-import org.omg.spec.api4kp._1_0.id.Pointer;
-import org.omg.spec.api4kp._1_0.services.KPServer;
+import org.omg.spec.api4kp._20200801.id.Pointer;
+import org.omg.spec.api4kp._20200801.services.KPServer;
+import org.omg.spec.api4kp._20200801.terms.model.ConceptDescriptor;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 
