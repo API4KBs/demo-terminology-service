@@ -15,6 +15,7 @@ package org.omg.demo.terms;
 
 import static org.omg.spec.api4kp._20200801.AbstractCarrier.rep;
 import static org.omg.spec.api4kp._20200801.id.IdentifierConstants.VERSION_ZERO;
+import static org.omg.spec.api4kp._20200801.surrogate.SurrogateHelper.toRuntimeSurrogate;
 import static org.omg.spec.api4kp._20200801.taxonomy.knowledgeassettype.KnowledgeAssetTypeSeries.Formal_Ontology;
 import static org.omg.spec.api4kp._20200801.taxonomy.krlanguage.KnowledgeRepresentationLanguageSeries.SPARQL_1_1;
 import static org.omg.spec.api4kp._20200801.taxonomy.lexicon.LexiconSeries.SKOS;
@@ -34,8 +35,8 @@ import org.omg.demo.terms.internal.TermsQueryType;
 import org.omg.spec.api4kp._20200801.AbstractCarrier;
 import org.omg.spec.api4kp._20200801.Answer;
 import org.omg.spec.api4kp._20200801.api.inference.v4.server.QueryApiInternal._askQuery;
-import org.omg.spec.api4kp._20200801.api.knowledgebase.v4.server.BindingApiInternal._bind;
 import org.omg.spec.api4kp._20200801.api.knowledgebase.v4.server.KnowledgeBaseApiInternal;
+import org.omg.spec.api4kp._20200801.api.knowledgebase.v4.server.KnowledgeBaseApiInternal._bind;
 import org.omg.spec.api4kp._20200801.api.terminology.v4.server.TermsApiInternal;
 import org.omg.spec.api4kp._20200801.api.transrepresentation.v4.server.DeserializeApiInternal;
 import org.omg.spec.api4kp._20200801.datatypes.Bindings;
@@ -49,6 +50,7 @@ import org.omg.spec.api4kp._20200801.services.SyntacticRepresentation;
 import org.omg.spec.api4kp._20200801.surrogate.KnowledgeArtifact;
 import org.omg.spec.api4kp._20200801.surrogate.KnowledgeAsset;
 import org.omg.spec.api4kp._20200801.surrogate.SurrogateBuilder;
+import org.omg.spec.api4kp._20200801.surrogate.SurrogateHelper;
 import org.omg.spec.api4kp._20200801.terms.model.ConceptDescriptor;
 import org.springframework.beans.factory.BeanInitializationException;
 
@@ -130,11 +132,10 @@ public class TermsServer implements TermsApiInternal {
   private Answer<List<ConceptDescriptor>> getTermsForVocabulary(KnowledgeAsset vocabularyMetadata,
       String labelFilter) {
     TermsQueryType queryType = detectQueryType(vocabularyMetadata);
-    return termsKBManager.initKnowledgeBase(vocabularyMetadata)
+    return termsKBManager.initKnowledgeBase(toRuntimeSurrogate(vocabularyMetadata))
         .flatMap(kBaseId ->
             getQuery(vocabularyMetadata, labelFilter, queryType)
-                .flatMap(boundQuery ->
-                    doQuery(kBaseId, boundQuery, queryType)));
+                .flatMap(boundQuery -> doQuery(kBaseId, boundQuery, queryType)));
   }
 
 
@@ -162,17 +163,13 @@ public class TermsServer implements TermsApiInternal {
         termsKBManager.getKnowledgeBase(kbId.getUuid(), kbId.getVersionTag());
 
     if (!paramQueryKb.isSuccess()) {
-      termsKBManager.initKnowledgeBase(new KnowledgeAsset()
-          .withAssetId(paramQuery.getAssetId()))
-          .flatMap(newKbId ->
-              termsKBManager.populateKnowledgeBase(newKbId.getUuid(), newKbId.getVersionTag(), paramQuery));
+      termsKBManager.initKnowledgeBase(paramQuery);
     }
 
     // TODO fix the identifiers so that this chain is simpler and smoother
-    return binder.bind(kbId.getUuid(), kbId.getVersionTag(), bindings)
+    return termsKBManager.bind(kbId.getUuid(), kbId.getVersionTag(), bindings)
         .flatMap(queryBasekbId -> termsKBManager
-            .getKnowledgeBase(queryBasekbId.getUuid(),queryBasekbId.getVersionTag()))
-        .map(KnowledgeBase::getManifestation);
+            .getKnowledgeBaseManifestation(queryBasekbId.getUuid(),queryBasekbId.getVersionTag()));
   }
 
   private KnowledgeCarrier loadParametricQuery(String path) {
@@ -194,7 +191,7 @@ public class TermsServer implements TermsApiInternal {
       bindings.put("?label", labelFilter);
     }
     bindings.put("?vocabulary",
-        ((ResourceIdentifier) vocMetadata.getSecondaryId().get(0)).getResourceId());
+        vocMetadata.getSecondaryId().get(0).getResourceId());
     return bindings;
   }
 
