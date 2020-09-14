@@ -36,9 +36,8 @@ import org.omg.spec.api4kp._20200801.AbstractCarrier;
 import org.omg.spec.api4kp._20200801.Answer;
 import org.omg.spec.api4kp._20200801.api.inference.v4.server.QueryApiInternal._askQuery;
 import org.omg.spec.api4kp._20200801.api.knowledgebase.v4.server.KnowledgeBaseApiInternal;
-import org.omg.spec.api4kp._20200801.api.knowledgebase.v4.server.KnowledgeBaseApiInternal._bind;
 import org.omg.spec.api4kp._20200801.api.terminology.v4.server.TermsApiInternal;
-import org.omg.spec.api4kp._20200801.api.transrepresentation.v4.server.DeserializeApiInternal;
+import org.omg.spec.api4kp._20200801.api.transrepresentation.v4.server.DeserializeApiInternal._applyLift;
 import org.omg.spec.api4kp._20200801.datatypes.Bindings;
 import org.omg.spec.api4kp._20200801.id.Pointer;
 import org.omg.spec.api4kp._20200801.id.ResourceIdentifier;
@@ -50,7 +49,6 @@ import org.omg.spec.api4kp._20200801.services.SyntacticRepresentation;
 import org.omg.spec.api4kp._20200801.surrogate.KnowledgeArtifact;
 import org.omg.spec.api4kp._20200801.surrogate.KnowledgeAsset;
 import org.omg.spec.api4kp._20200801.surrogate.SurrogateBuilder;
-import org.omg.spec.api4kp._20200801.surrogate.SurrogateHelper;
 import org.omg.spec.api4kp._20200801.terms.model.ConceptDescriptor;
 import org.springframework.beans.factory.BeanInitializationException;
 
@@ -68,16 +66,12 @@ public class TermsServer implements TermsApiInternal {
   private KnowledgeBaseApiInternal termsKBManager;
 
   @Inject
-  @KPSupport(SPARQL_1_1)
-  private _bind binder;
-
-  @Inject
   private _askQuery inquirer;
 
   @Inject
   @KPSupport(SPARQL_1_1)
   // Parse...
-  private DeserializeApiInternal._applyLift sparqlParser;
+  private _applyLift sparqlParser;
 
   @Inject
   private TermsBuilder termsBuilder;
