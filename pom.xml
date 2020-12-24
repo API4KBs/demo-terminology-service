@@ -7,18 +7,18 @@
   <parent>
     <groupId>edu.mayo.kmdp</groupId>
     <artifactId>kmdp-terminology-service-base</artifactId>
-    <version>9.0.1-SNAPSHOT</version>
+    <version>9.0.4-SNAPSHOT</version>
   </parent>
 
   <packaging>war</packaging>
 
   <artifactId>demo-terminology-service</artifactId>
   <groupId>org.omg.demo</groupId>
-  <version>3.1.0</version>
+  <version>3.1.1</version>
 
   <properties>
-    <kmdp.impl.version.resolved>9.0.1-SNAPSHOT</kmdp.impl.version.resolved>
-    <kmdp.services.impl.version>4.9.0-SNAPSHOT</kmdp.services.impl.version>
+    <kmdp.impl.version.resolved>9.0.4-SNAPSHOT</kmdp.impl.version.resolved>
+    <kmdp.services.impl.version>4.9.4-SNAPSHOT</kmdp.services.impl.version>
   </properties>
 
   <name>API4KP :: Demo :: Terminology Server</name>
