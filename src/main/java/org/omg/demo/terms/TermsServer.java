@@ -21,6 +21,7 @@ import static org.omg.spec.api4kp._20200801.taxonomy.krlanguage.KnowledgeReprese
 import static org.omg.spec.api4kp._20200801.taxonomy.lexicon.LexiconSeries.SKOS;
 import static org.omg.spec.api4kp._20200801.taxonomy.parsinglevel.ParsingLevelSeries.Concrete_Knowledge_Expression;
 
+import edu.mayo.kmdp.registry.Registry;
 import edu.mayo.kmdp.repository.asset.KnowledgeAssetRepositoryService;
 import edu.mayo.kmdp.util.Util;
 import java.util.Arrays;
@@ -170,7 +171,7 @@ public class TermsServer implements TermsApiInternal {
     KnowledgeCarrier binary = AbstractCarrier
         .of(TermsServer.class.getResourceAsStream(path))
         .withRepresentation(rep(SPARQL_1_1))
-        .withAssetId(SurrogateBuilder.assetId(Util.uuid(path), VERSION_ZERO));
+        .withAssetId(SurrogateBuilder.assetId(Registry.BASE_UUID_URN_URI,Util.uuid(path)));
 
     return sparqlParser.applyLift(binary, Concrete_Knowledge_Expression,null,null)
         // TODO : carrying over the IDs is a responsibility of the lifter

@@ -7,7 +7,7 @@
   <parent>
     <groupId>edu.mayo.kmdp</groupId>
     <artifactId>kmdp-terminology-service-base</artifactId>
-    <version>9.0.4-SNAPSHOT</version>
+    <version>9.0.9-SNAPSHOT</version>
   </parent>
 
   <packaging>war</packaging>
@@ -17,8 +17,8 @@
   <version>3.1.1</version>
 
   <properties>
-    <kmdp.impl.version.resolved>9.0.4-SNAPSHOT</kmdp.impl.version.resolved>
-    <kmdp.services.impl.version>4.9.4-SNAPSHOT</kmdp.services.impl.version>
+    <kmdp.impl.version>9.0.9-SNAPSHOT</kmdp.impl.version>
+    <kmdp.services.impl.version>4.9.9-SNAPSHOT</kmdp.services.impl.version>
   </properties>
 
   <name>API4KP :: Demo :: Terminology Server</name>
@@ -28,23 +28,23 @@
     <dependency>
       <groupId>edu.mayo.kmdp</groupId>
       <artifactId>kmdp-terminology-service-server</artifactId>
-      <version>${kmdp.impl.version.resolved}</version>
+      <version>${kmdp.impl.version}</version>
     </dependency>
     <dependency>
       <groupId>edu.mayo.kmdp</groupId>
       <artifactId>kmdp-knowledgebase-service-interfaces</artifactId>
-      <version>${kmdp.impl.version.resolved}</version>
+      <version>${kmdp.impl.version}</version>
     </dependency>
     <dependency>
       <groupId>edu.mayo.kmdp</groupId>
       <artifactId>kmdp-inference-service-interfaces</artifactId>
-      <version>${kmdp.impl.version.resolved}</version>
+      <version>${kmdp.impl.version}</version>
     </dependency>
 
     <dependency>
       <groupId>edu.mayo.kmdp</groupId>
       <artifactId>kmdp-terminology-service-client</artifactId>
-      <version>${kmdp.impl.version.resolved}</version>
+      <version>${kmdp.impl.version}</version>
       <scope>test</scope>
     </dependency>
 
