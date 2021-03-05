@@ -22,6 +22,7 @@ import edu.mayo.kmdp.language.parsers.owl2.OWLParser;
 import edu.mayo.kmdp.language.parsers.sparql.SparqlLifter;
 import edu.mayo.kmdp.registry.Registry;
 import edu.mayo.kmdp.repository.artifact.KnowledgeArtifactRepositoryService;
+import edu.mayo.kmdp.repository.artifact.jpa.JPAKnowledgeArtifactRepositoryService;
 import edu.mayo.kmdp.repository.asset.KnowledgeAssetRepositoryServerConfig;
 import edu.mayo.kmdp.repository.asset.KnowledgeAssetRepositoryServerConfig.KnowledgeAssetRepositoryOptions;
 import edu.mayo.kmdp.repository.asset.KnowledgeAssetRepositoryService;
@@ -60,7 +61,7 @@ public class TermsServerConfig implements WebMvcConfigurer {
   @Bean
   @KPServer
   public KnowledgeArtifactRepositoryService artifactRepo() {
-    return KnowledgeArtifactRepositoryService.inMemoryArtifactRepository();
+    return JPAKnowledgeArtifactRepositoryService.inMemoryArtifactRepository();
   }
 
   @Bean
