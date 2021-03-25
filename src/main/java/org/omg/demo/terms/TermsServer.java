@@ -127,7 +127,7 @@ public class TermsServer implements TermsApiInternal {
   private Answer<List<ConceptDescriptor>> getTermsForVocabulary(KnowledgeAsset vocabularyMetadata,
       String labelFilter) {
     TermsQueryType queryType = detectQueryType(vocabularyMetadata);
-    return termsKBManager.initKnowledgeBase(toRuntimeSurrogate(vocabularyMetadata))
+    return termsKBManager.initKnowledgeBase(toRuntimeSurrogate(vocabularyMetadata), null)
         .flatMap(kBaseId ->
             getQuery(vocabularyMetadata, labelFilter, queryType)
                 .flatMap(boundQuery -> doQuery(kBaseId, boundQuery, queryType)));
@@ -138,7 +138,7 @@ public class TermsServer implements TermsApiInternal {
       ResourceIdentifier kBaseId,
       KnowledgeCarrier query,
       TermsQueryType queryType) {
-    return inquirer.askQuery(kBaseId.getUuid(), kBaseId.getVersionTag(), query)
+    return inquirer.askQuery(kBaseId.getUuid(), kBaseId.getVersionTag(), query, null)
         .map(answer -> termsBuilder.buildTerms(answer, queryType));
   }
 
@@ -158,7 +158,7 @@ public class TermsServer implements TermsApiInternal {
         termsKBManager.getKnowledgeBase(kbId.getUuid(), kbId.getVersionTag());
 
     if (!paramQueryKb.isSuccess()) {
-      termsKBManager.initKnowledgeBase(paramQuery);
+      termsKBManager.initKnowledgeBase(paramQuery, null);
     }
 
     // TODO fix the identifiers so that this chain is simpler and smoother
